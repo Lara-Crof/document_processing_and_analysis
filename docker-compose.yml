@@ -28,7 +28,7 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
-      - /app/backend  # исключаем папку backend из монтирования (опционально)
+      - /app/backend
     working_dir: /app/backend
 
 volumes:
