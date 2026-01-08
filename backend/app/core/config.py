@@ -8,7 +8,7 @@ class BaseAppSettings(BaseSettings):
     class Config:
         env_file = "dev.env"
         env_file_encoding = "utf-8"
-
+        extra = "ignore"
 
 class DatabaseSettings(BaseAppSettings):
     # PostgreSQL
@@ -30,12 +30,29 @@ class DatabaseSettings(BaseAppSettings):
 
     @property
     def DATABASE_URL(self) -> str:
-        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        return (
+            f"postgresql://{self.POSTGRES_USER}:"
+            f"{self.POSTGRES_PASSWORD}@"
+            f"{self.POSTGRES_HOST}:"
+            f"{self.POSTGRES_PORT}/"
+            f"{self.POSTGRES_DB}"
+        )
 
     @property
-    def ASYNC_DATABASE_URL(self) -> str:
-        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+    def ENGINE_OPTIONS(self) -> dict:
+        return {
+            "echo": self.SQLALCHEMY_ECHO,
+            "pool_size": self.SQLALCHEMY_POOL_SIZE,
+            "max_overflow": self.SQLALCHEMY_MAX_OVERFLOW,
+            "pool_recycle": self.SQLALCHEMY_POOL_RECYCLE,
+        }
 
+    @property
+    def SESSION_OPTIONS(self) -> dict:
+        return {
+            "autocommit": self.SQLALCHEMY_AUTOCOMMIT,
+            "autoflush": self.SQLALCHEMY_AUTOFLUSH,
+        }
 
 class FastAPISettings(BaseAppSettings):
     HOST: str
