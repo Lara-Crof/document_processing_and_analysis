@@ -1,4 +1,3 @@
-# Dockerfile
 FROM python:3.13-slim
 LABEL maintainer="Larisa Slizskaia"
 LABEL description="PDF Analyzer"
