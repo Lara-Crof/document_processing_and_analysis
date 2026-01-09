@@ -1,10 +1,10 @@
 import logging
-from typing import Optional
+from typing import Optional, Generator
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
-from sqlalchemy.orm import declarative_base, sessionmaker, Session as SASession
+from sqlalchemy.orm import declarative_base, sessionmaker, Session as SASession, Session
 
 from backend.app.core.settings import db_settings
 
@@ -21,8 +21,9 @@ class Database:
 
     @property
     def engine(self) -> Engine:
-        if self._engine is None:
-            self._engine = create_engine(self._settings.DATABASE_URL, **self._settings.ENGINE_OPTIONS)
+        if self._engine is not None:
+            self._engine.dispose()
+        self._engine = create_engine(self._settings.DATABASE_URL, **self._settings.ENGINE_OPTIONS)
         return self._engine
 
     @property
@@ -30,6 +31,13 @@ class Database:
         if self._SessionLocal is None:
             self._SessionLocal = sessionmaker(bind=self.engine, **self._settings.SESSION_OPTIONS)
         return self._SessionLocal
+
+    def get_db(self) -> Generator[Session, None, None]:
+        session = self.get_session()
+        try:
+            yield session
+        finally:
+            session.close()
 
     def get_session(self) -> SASession:
         return self.SessionLocal()
